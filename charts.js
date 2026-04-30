@@ -42,7 +42,26 @@ class DashboardCharts {
 
   async getHistoryData(entityId, period = '24h') {
     try {
-      const url = `${this.api.url}/api/history/period/${period}?filter_entity_ids=${entityId}`;
+      // Calculate start and end times based on period
+      const now = new Date();
+      const start = new Date(now);
+
+      // Parse period string (e.g., "24h", "7d")
+      const match = period.match(/^(\d+)([hd])$/);
+      if (match) {
+        const amount = parseInt(match[1]);
+        const unit = match[2];
+        if (unit === 'h') {
+          start.setHours(start.getHours() - amount);
+        } else if (unit === 'd') {
+          start.setDate(start.getDate() - amount);
+        }
+      }
+
+      const startTime = start.toISOString();
+      const endTime = now.toISOString();
+
+      const url = `${this.api.url}/api/history?filter_entity_ids=${entityId}&start_time=${startTime}&end_time=${endTime}`;
       console.log(`Fetching history from: ${url}`);
 
       const response = await fetch(url, {
