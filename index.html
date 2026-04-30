@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solar Power Dashboard - NRG Aurora</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>NRG Aurora - Solar Power Monitoring</h1>
+      <div class="status-indicator">
+        <span id="connection-status" class="status-dot disconnected"></span>
+        <span id="status-text">Connecting...</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- PV Input Section -->
+      <section class="section">
+        <h2>PV Input</h2>
+        <div class="grid">
+          <div class="card pv-card">
+            <h3>ATLAS</h3>
+            <div class="value" id="atlas-pv">--</div>
+            <div class="unit">W</div>
+            <div class="subtitle">PV INPUT</div>
+            <div class="bar-chart" id="atlas-bar"></div>
+          </div>
+          <div class="card pv-card">
+            <h3>HELIOS</h3>
+            <div class="value" id="helios-pv">--</div>
+            <div class="unit">W</div>
+            <div class="subtitle">PV INPUT</div>
+            <div class="bar-chart" id="helios-bar"></div>
+          </div>
+          <div class="card pv-card">
+            <h3>AURORA STATION</h3>
+            <div class="value" id="combined-pv">--</div>
+            <div class="unit">W</div>
+            <div class="subtitle">COMBINED SOLAR</div>
+            <div class="bar-chart" id="combined-bar"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Daily Yield Section -->
+      <section class="section">
+        <h2>Daily Yield</h2>
+        <div class="grid">
+          <div class="card stat-card">
+            <h3>ATLAS Daily</h3>
+            <div class="value" id="atlas-daily">--</div>
+            <div class="unit">kWh</div>
+            <div class="subtitle">DAILY YIELD</div>
+          </div>
+          <div class="card stat-card">
+            <h3>HELIOS Daily</h3>
+            <div class="value" id="helios-daily">--</div>
+            <div class="unit">kWh</div>
+            <div class="subtitle">DAILY YIELD</div>
+          </div>
+          <div class="card stat-card">
+            <h3>Solar Generation</h3>
+            <div class="value" id="solar-gen">--</div>
+            <div class="unit">kWh</div>
+            <div class="subtitle">TODAY TOTAL</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Battery Section -->
+      <section class="section">
+        <h2>Battery Status</h2>
+        <div class="grid">
+          <div class="card stat-card">
+            <h3>ATLAS SOC</h3>
+            <div class="value" id="atlas-soc">--</div>
+            <div class="unit">%</div>
+            <div class="subtitle" id="soc-status">--</div>
+            <div class="bar-chart" id="soc-bar"></div>
+          </div>
+          <div class="card stat-card">
+            <h3>Battery In Storage</h3>
+            <div class="value" id="battery-kwh">--</div>
+            <div class="unit">kWh</div>
+            <div class="subtitle" id="battery-pct">--</div>
+            <div class="bar-chart" id="battery-bar"></div>
+          </div>
+          <div class="card stat-card">
+            <h3>Battery Temp</h3>
+            <div class="value" id="battery-temp">--</div>
+            <div class="unit">°C</div>
+            <div class="subtitle">CELL THERMAL</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Power Flow Section -->
+      <section class="section">
+        <h2>Power Flow</h2>
+        <div class="grid">
+          <div class="card stat-card">
+            <h3>Battery Flow</h3>
+            <div class="value" id="battery-flow">--</div>
+            <div class="unit">W</div>
+            <div class="subtitle" id="battery-flow-state">--</div>
+          </div>
+          <div class="card stat-card">
+            <h3>ATLAS Output</h3>
+            <div class="value" id="atlas-output">--</div>
+            <div class="unit">W</div>
+            <div class="subtitle">INVERTER OUTPUT</div>
+          </div>
+          <div class="card stat-card">
+            <h3>Grid Total Power</h3>
+            <div class="value" id="grid-power">--</div>
+            <div class="unit">W</div>
+            <div class="subtitle">TOTAL ACTIVE</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Energy Trading Section -->
+      <section class="section">
+        <h2>Energy Trading (EPEX)</h2>
+        <div class="grid">
+          <div class="card stat-card">
+            <h3>Current Price</h3>
+            <div class="value" id="epex-price">--</div>
+            <div class="unit">€/kWh</div>
+            <div class="subtitle">LIVE MARKET</div>
+          </div>
+          <div class="card stat-card">
+            <h3>Moving Average</h3>
+            <div class="value" id="epex-avg">--</div>
+            <div class="unit">€/kWh</div>
+            <div class="subtitle">MOVING AVERAGE</div>
+          </div>
+          <div class="card stat-card">
+            <h3>Buy Threshold</h3>
+            <div class="value" id="epex-threshold">--</div>
+            <div class="unit">€/kWh</div>
+            <div class="subtitle">25% THRESHOLD</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Battery Bank Detail -->
+      <section class="section">
+        <h2>Battery Bank</h2>
+        <div class="battery-bank">
+          <div class="bank-item">
+            <span>Total Battery</span>
+            <span class="value" id="total-battery">--</span>
+            <span class="unit">%</span>
+          </div>
+          <div class="bank-item">
+            <span>BAT01</span>
+            <span class="value" id="bat01">--</span>
+            <span class="unit">%</span>
+          </div>
+          <div class="bank-item">
+            <span>BAT02</span>
+            <span class="value" id="bat02">--</span>
+            <span class="unit">%</span>
+          </div>
+          <div class="bank-item">
+            <span>BAT03</span>
+            <span class="value" id="bat03">--</span>
+            <span class="unit">%</span>
+          </div>
+          <div class="bank-item">
+            <span>BAT04</span>
+            <span class="value" id="bat04">--</span>
+            <span class="unit">%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Info Notice -->
+      <section class="info-notice">
+        <p><strong>Read-Only View:</strong> This dashboard displays real-time solar power monitoring data. All data refreshes every 30 seconds.</p>
+        <p><em>No control functions are available on this public-facing dashboard. Energy management systems remain internal.</em></p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Last updated: <span id="last-update">--</span></p>
+      <p>Data source: Home Assistant Solar Integration</p>
+    </footer>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
