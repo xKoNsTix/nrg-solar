@@ -4,6 +4,7 @@ class SolarDashboard {
     this.refreshInterval = CONFIG.REFRESH_INTERVAL;
     this.isConnected = false;
     this.lastUpdateTime = null;
+    this.charts = null;
     this.init();
   }
 
@@ -13,6 +14,9 @@ class SolarDashboard {
     this.setConnectionStatus(connected);
 
     if (connected) {
+      // Initialize charts
+      this.charts = new DashboardCharts(this.api);
+
       // Initial data load
       await this.updateData();
 
