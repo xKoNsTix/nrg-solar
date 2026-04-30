@@ -13,22 +13,27 @@ class DashboardCharts {
 
   async loadCharts() {
     try {
+      console.log('Loading charts...');
+
       const atlasData = await this.getHistoryData(
         this.api.entities.pv_atlas,
         '24h'
       );
+      console.log('ATLAS data points:', atlasData.length);
       this.renderProductionChart('chart-atlas-production', atlasData, 'ATLAS', '#efefef');
 
       const heliosData = await this.getHistoryData(
         this.api.entities.pv_helios,
         '24h'
       );
+      console.log('HELIOS data points:', heliosData.length);
       this.renderProductionChart('chart-helios-production', heliosData, 'HELIOS', '#cfcfcf');
 
       const socData = await this.getHistoryData(
         this.api.entities.battery_soc,
         '24h'
       );
+      console.log('SOC data points:', socData.length);
       this.renderSocChart('chart-battery-soc', socData);
     } catch (error) {
       console.error('Error loading charts:', error);
