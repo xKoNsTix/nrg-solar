@@ -58,11 +58,14 @@ class DashboardCharts {
       }
 
       const data = await response.json();
-      if (data && data[0]) {
-        return data[0].map(item => ({
-          timestamp: new Date(item.last_changed).getTime(),
-          value: parseFloat(item.state) || 0,
-        }));
+      if (data) {
+        const historyArray = data[entityId] || Object.values(data)[0];
+        if (historyArray && Array.isArray(historyArray)) {
+          return historyArray.map(item => ({
+            timestamp: new Date(item.last_changed).getTime(),
+            value: parseFloat(item.state) || 0,
+          }));
+        }
       }
       return [];
     } catch (error) {
