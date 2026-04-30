@@ -110,197 +110,142 @@ class DashboardCharts {
   }
 
   renderProductionChart(elementId, data, title, color) {
+    const element = document.getElementById(elementId);
+    if (!element) {
+      console.error(`Element not found: ${elementId}`);
+      return;
+    }
+
     if (!data || data.length === 0) {
       console.warn(`No data for ${title}`);
+      element.innerHTML = '<div style="color: #8f8f8f; padding: 20px; text-align: center;">No data available</div>';
       return;
     }
 
     console.log(`Rendering ${title} chart with ${data.length} points`);
-    const chartData = data.map(item => [item.timestamp, item.value]);
 
-    const options = {
-      chart: {
-        type: 'area',
-        height: 300,
-        background: 'transparent',
-        foreColor: '#cfcfcf',
-        toolbar: {
-          show: false,
-        },
-        animations: {
-          enabled: true,
-          easing: 'easeinout',
-          speed: 700,
-        },
-      },
-      stroke: {
-        curve: 'smooth',
-        width: 2,
-      },
-      fill: {
-        type: 'gradient',
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.45,
-          opacityTo: 0.05,
-          stops: [0, 90, 100],
-        },
-      },
-      grid: {
-        borderColor: 'rgba(255,255,255,0.08)',
-      },
-      xaxis: {
-        type: 'datetime',
-        labels: {
-          style: {
-            colors: '#8f8f8f',
-          },
-        },
-      },
-      yaxis: {
-        labels: {
-          style: {
-            colors: '#8f8f8f',
-          },
-        },
-        title: {
-          text: 'Power (W)',
-          style: {
-            color: '#8f8f8f',
-          },
-        },
-      },
-      tooltip: {
-        shared: true,
-        x: {
-          format: 'HH:mm',
-        },
-        theme: 'dark',
-      },
-    };
-
-    const series = [
-      {
-        name: title,
-        data: chartData,
-      },
-    ];
-
-    // Destroy previous chart if exists
-    if (this.charts[elementId]) {
-      this.charts[elementId].destroy();
-    }
-
-    // Create new chart
     try {
-      const element = document.getElementById(elementId);
-      console.log(`Chart element exists for ${elementId}:`, !!element);
+      // Simple SVG-based chart instead of ApexCharts
+      const minValue = Math.min(...data.map(d => d.value));
+      const maxValue = Math.max(...data.map(d => d.value));
+      const range = maxValue - minValue || 1;
 
-      const chart = new ApexCharts(element, {
-        ...options,
-        series,
-        colors: [color],
+      const width = element.clientWidth || 600;
+      const height = 300;
+      const padding = 40;
+      const chartWidth = width - 2 * padding;
+      const chartHeight = height - 2 * padding;
+
+      let svg = `<svg width="${width}" height="${height}" style="background: transparent;">`;
+
+      // Draw grid
+      svg += `<line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>`;
+      svg += `<line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>`;
+
+      // Draw data points and line
+      let pathD = '';
+      data.forEach((point, i) => {
+        const x = padding + (i / (data.length - 1)) * chartWidth;
+        const y = height - padding - ((point.value - minValue) / range) * chartHeight;
+
+        if (i === 0) {
+          pathD += `M${x},${y}`;
+        } else {
+          pathD += `L${x},${y}`;
+        }
       });
 
-      chart.render();
+      svg += `<path d="${pathD}" stroke="${color}" stroke-width="2" fill="none"/>`;
+
+      // Draw data points
+      data.forEach((point, i) => {
+        const x = padding + (i / (data.length - 1)) * chartWidth;
+        const y = height - padding - ((point.value - minValue) / range) * chartHeight;
+        svg += `<circle cx="${x}" cy="${y}" r="2" fill="${color}"/>`;
+      });
+
+      // Add labels
+      svg += `<text x="${width/2}" y="${height - 5}" text-anchor="middle" fill="#8f8f8f" font-size="12">${title}</text>`;
+      svg += `<text x="10" y="${padding + 20}" fill="#8f8f8f" font-size="10">${maxValue.toFixed(0)}W</text>`;
+      svg += `<text x="10" y="${height - padding - 10}" fill="#8f8f8f" font-size="10">${minValue.toFixed(0)}W</text>`;
+
+      svg += '</svg>';
+
+      element.innerHTML = svg;
       console.log(`Chart rendered successfully: ${elementId}`);
-      this.charts[elementId] = chart;
     } catch (error) {
       console.error(`Failed to render chart ${elementId}:`, error);
+      element.innerHTML = `<div style="color: #ef4444; padding: 20px;">Error rendering chart: ${error.message}</div>`;
     }
   }
 
   renderSocChart(elementId, data) {
+    const element = document.getElementById(elementId);
+    if (!element) {
+      console.error(`Element not found: ${elementId}`);
+      return;
+    }
+
     if (!data || data.length === 0) {
       console.warn('No SOC data');
+      element.innerHTML = '<div style="color: #8f8f8f; padding: 20px; text-align: center;">No data available</div>';
       return;
     }
 
     console.log(`Rendering SOC chart with ${data.length} points`);
-    const chartData = data.map(item => [item.timestamp, item.value]);
 
-    const options = {
-      chart: {
-        type: 'line',
-        height: 300,
-        background: 'transparent',
-        foreColor: '#cfcfcf',
-        toolbar: {
-          show: false,
-        },
-        animations: {
-          enabled: true,
-          easing: 'easeinout',
-          speed: 700,
-        },
-      },
-      stroke: {
-        curve: 'smooth',
-        width: 2,
-      },
-      grid: {
-        borderColor: 'rgba(255,255,255,0.08)',
-      },
-      xaxis: {
-        type: 'datetime',
-        labels: {
-          style: {
-            colors: '#8f8f8f',
-          },
-        },
-      },
-      yaxis: {
-        min: 0,
-        max: 100,
-        labels: {
-          style: {
-            colors: '#8f8f8f',
-          },
-        },
-        title: {
-          text: 'SOC (%)',
-          style: {
-            color: '#8f8f8f',
-          },
-        },
-      },
-      tooltip: {
-        shared: true,
-        x: {
-          format: 'HH:mm',
-        },
-        theme: 'dark',
-      },
-    };
-
-    const series = [
-      {
-        name: 'Battery SOC',
-        data: chartData,
-      },
-    ];
-
-    // Destroy previous chart if exists
-    if (this.charts[elementId]) {
-      this.charts[elementId].destroy();
-    }
-
-    // Create new chart
     try {
-      const element = document.getElementById(elementId);
-      console.log(`Chart element exists for ${elementId}:`, !!element);
+      // Simple SVG-based chart
+      const minValue = 0;
+      const maxValue = 100;
+      const range = 100;
 
-      const chart = new ApexCharts(element, {
-        ...options,
-        series,
-        colors: ['#d8d8d8'],
+      const width = element.clientWidth || 600;
+      const height = 300;
+      const padding = 40;
+      const chartWidth = width - 2 * padding;
+      const chartHeight = height - 2 * padding;
+
+      let svg = `<svg width="${width}" height="${height}" style="background: transparent;">`;
+
+      // Draw grid
+      svg += `<line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>`;
+      svg += `<line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>`;
+
+      // Draw data points and line
+      let pathD = '';
+      data.forEach((point, i) => {
+        const x = padding + (i / (data.length - 1)) * chartWidth;
+        const y = height - padding - ((point.value - minValue) / range) * chartHeight;
+
+        if (i === 0) {
+          pathD += `M${x},${y}`;
+        } else {
+          pathD += `L${x},${y}`;
+        }
       });
 
-      chart.render();
+      svg += `<path d="${pathD}" stroke="#d8d8d8" stroke-width="2" fill="none"/>`;
+
+      // Draw data points
+      data.forEach((point, i) => {
+        const x = padding + (i / (data.length - 1)) * chartWidth;
+        const y = height - padding - ((point.value - minValue) / range) * chartHeight;
+        svg += `<circle cx="${x}" cy="${y}" r="2" fill="#d8d8d8"/>`;
+      });
+
+      // Add labels
+      svg += `<text x="${width/2}" y="${height - 5}" text-anchor="middle" fill="#8f8f8f" font-size="12">Battery SOC</text>`;
+      svg += `<text x="10" y="${padding + 20}" fill="#8f8f8f" font-size="10">100%</text>`;
+      svg += `<text x="10" y="${height - padding - 10}" fill="#8f8f8f" font-size="10">0%</text>`;
+
+      svg += '</svg>';
+
+      element.innerHTML = svg;
       console.log(`Chart rendered successfully: ${elementId}`);
-      this.charts[elementId] = chart;
     } catch (error) {
       console.error(`Failed to render chart ${elementId}:`, error);
+      element.innerHTML = `<div style="color: #ef4444; padding: 20px;">Error rendering chart: ${error.message}</div>`;
     }
   }
 }
