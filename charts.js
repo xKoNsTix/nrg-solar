@@ -42,32 +42,48 @@ class DashboardCharts {
 
   async getHistoryData(entityId, period = '24h') {
     try {
-      const response = await fetch(
-        `${this.api.url}/api/history/period/${period}?filter_entity_ids=${entityId}`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${this.api.token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const url = `${this.api.url}/api/history/period/${period}?filter_entity_ids=${entityId}`;
+      console.log(`Fetching history from: ${url}`);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${this.api.token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log(`Response status: ${response.status}`);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
 
       const data = await response.json();
-      if (data) {
-        const historyArray = data[entityId] || Object.values(data)[0];
-        if (historyArray && Array.isArray(historyArray)) {
-          return historyArray.map(item => ({
-            timestamp: new Date(item.last_changed).getTime(),
-            value: parseFloat(item.state) || 0,
-          }));
-        }
+      console.log(`Raw response for ${entityId}:`, JSON.stringify(data).substring(0, 200));
+
+      // Handle different response formats
+      let historyArray = null;
+
+      if (Array.isArray(data)) {
+        // Response is an array directly
+        historyArray = data;
+      } else if (typeof data === 'object' && data !== null) {
+        // Response is an object - try to find the entity's array
+        historyArray = data[entityId] || Object.values(data)[0];
       }
-      return [];
+
+      if (historyArray && Array.isArray(historyArray) && historyArray.length > 0) {
+        const mapped = historyArray.map(item => ({
+          timestamp: new Date(item.last_changed).getTime(),
+          value: parseFloat(item.state) || 0,
+        }));
+        console.log(`Mapped ${mapped.length} data points for ${entityId}`);
+        return mapped;
+      } else {
+        console.warn(`No valid history array found for ${entityId}`, { historyArray });
+        return [];
+      }
     } catch (error) {
       console.error(`Error fetching history for ${entityId}:`, error);
       return [];
@@ -80,6 +96,7 @@ class DashboardCharts {
       return;
     }
 
+    console.log(`Rendering ${title} chart with ${data.length} points`);
     const chartData = data.map(item => [item.timestamp, item.value]);
 
     const options = {
@@ -156,14 +173,22 @@ class DashboardCharts {
     }
 
     // Create new chart
-    const chart = new ApexCharts(document.getElementById(elementId), {
-      ...options,
-      series,
-      colors: [color],
-    });
+    try {
+      const element = document.getElementById(elementId);
+      console.log(`Chart element exists for ${elementId}:`, !!element);
 
-    chart.render();
-    this.charts[elementId] = chart;
+      const chart = new ApexCharts(element, {
+        ...options,
+        series,
+        colors: [color],
+      });
+
+      chart.render();
+      console.log(`Chart rendered successfully: ${elementId}`);
+      this.charts[elementId] = chart;
+    } catch (error) {
+      console.error(`Failed to render chart ${elementId}:`, error);
+    }
   }
 
   renderSocChart(elementId, data) {
@@ -172,6 +197,7 @@ class DashboardCharts {
       return;
     }
 
+    console.log(`Rendering SOC chart with ${data.length} points`);
     const chartData = data.map(item => [item.timestamp, item.value]);
 
     const options = {
@@ -241,13 +267,21 @@ class DashboardCharts {
     }
 
     // Create new chart
-    const chart = new ApexCharts(document.getElementById(elementId), {
-      ...options,
-      series,
-      colors: ['#d8d8d8'],
-    });
+    try {
+      const element = document.getElementById(elementId);
+      console.log(`Chart element exists for ${elementId}:`, !!element);
 
-    chart.render();
-    this.charts[elementId] = chart;
+      const chart = new ApexCharts(element, {
+        ...options,
+        series,
+        colors: ['#d8d8d8'],
+      });
+
+      chart.render();
+      console.log(`Chart rendered successfully: ${elementId}`);
+      this.charts[elementId] = chart;
+    } catch (error) {
+      console.error(`Failed to render chart ${elementId}:`, error);
+    }
   }
 }
